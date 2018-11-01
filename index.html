@@ -5,25 +5,15 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<title>函证工作站</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta name="description" content="RockyRoll Resume Website" />
-	<meta name="keywords" content="RockyRoll, Resume" />
-  	<!-- Facebook and Twitter integration -->
-	<meta property="og:title" content=""/>
-	<meta property="og:image" content=""/>
-	<meta property="og:url" content=""/>
-	<meta property="og:site_name" content=""/>
-	<meta property="og:description" content=""/>
-	<meta name="twitter:title" content="" />
-	<meta name="twitter:image" content="" />
-	<meta name="twitter:url" content="" />
-	<meta name="twitter:card" content="" />
 
 	<!-- Animate.css -->
 	<link rel="stylesheet" href="css/animate.css">
 	<!-- Icomoon Icon Fonts-->
 	<link rel="stylesheet" href="css/icomoon.css">
 	<!-- Bootstrap  -->
-	<link rel="stylesheet" href="css/bootstrap.css">
+	<!--<link rel="stylesheet" href="css/bootstrap.css">-->
+	<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 
 	<!-- Theme style  -->
 	<link rel="stylesheet" href="css/style.css">
@@ -31,8 +21,9 @@
 
 	<script src="js/xlsx.full.min.js"></script>
 	<script type="text/javascript" src="js/FileSaver.js"></script>
+
 	<script type="text/javascript" src="js/Export2Excel.js"></script>
-	<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=gVNM7VnRHRcZkOLZTeZW6oEf"></script>
+	<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=EaYh6PX1frmRSohy9jmZrGOEvk7ple9z"></script>
 	</head>
 	<body>
 
@@ -40,7 +31,7 @@
 		<div class="overlay"></div>
 		<div class="container">
 			<div class="row animate-box">
-				<div class="col-md-8 col-md-offset-2 text-center fh5co-heading">
+				<div class="col-md-12 text-center fh5co-heading">
 					<h2>函证工作站</h2>
 				</div>
 			</div>
@@ -81,10 +72,10 @@
 					</ul>
 				</div>
 
-				<div class="col-lg-10 col-md-10 col-sm-12">
+				<div class="col-lg-7 col-md-7 col-sm-12">
 					<div id="out"></div>
 				</div>
-				<div class="col-lg-2 col-md-2 col-sm-12">
+				<div class="col-lg-5 col-md-5 col-sm-12">
 					<div id="baidumap" style="
 						width: 90%;
 						height: 90%;
@@ -110,12 +101,6 @@
 	<!-- jQuery -->
 	<script src="js/jquery.min.js"></script>
 
-	<!-- Bootstrap -->
-	<script src="js/bootstrap.min.js"></script>
-
-
-
-
 
 	<script type="text/javascript">
         //查询地址
@@ -136,15 +121,18 @@
                 onSearchComplete: function(results){
                     // 判断状态是否正确
                     if (localSearch.getStatus() == BMAP_STATUS_SUCCESS){
-                        var theFirstAdress=results["Br"][0];
+                        var theFirstAdress=results["Ar"][0];
 
+                        var realAdress=theFirstAdress.title;
                         var detailAdress=theFirstAdress.province+theFirstAdress.city+theFirstAdress.address;
 
-                        if(typeof (theFirstAdress) == "undefined"){
-							detailAdress="<span style='color: red;'>这个找不到</span>";
-						}
+                        // document.getElementById(idStr).innerHTML = JSON.stringify(results);
                         document.getElementById(idStr).innerHTML = detailAdress;
-                    }
+                        document.getElementById(idStr+"_r").innerHTML = realAdress;
+                    }else{
+                        document.getElementById(idStr).innerHTML = "<span style='color: red;'>查不到！</span>";
+                        document.getElementById(idStr+"_r").innerHTML = "";
+					}
                 },
                 renderOptions:{map: map}
             };
@@ -211,15 +199,20 @@
                             if(i>1 && j==1){
                                 workplace=obj[arrayTitle[j] + i].replace('\'','');
                                 result += '<td>'+workplace+'</td>'; //数据
-                                //第三列
+                                //第三、四列
                             }else if(i>1 && j==2){
                                 var idStr=i+"_"+j;
-                                result += '<td id="'+idStr+'">'+searchByStationName(workplace,idStr)+'</td>'; //数据
-                                // result += '<td>222</td>'; //数据
+                                var idStr_r=idStr+"_r";
+                                result += '<td id="'+idStr+'">'+searchByStationName(workplace,idStr)+'</td>' + //详细地址
+									'<td id="'+idStr_r+'"></td>'; //实际地址
                             }else{
                                 result += '<td>'+obj[arrayTitle[j] + i].replace('\'','')+'</td>'; //数据
                             }
                         }
+
+                        if(i==1){
+                            result+='<td>实际查询地址</td>'
+						}
                         result += '</tr>';
                     }
                     result += '</table>';
@@ -232,7 +225,25 @@
 
         //导出表格
         function doit() {
-            export_table_to_excel('exporttable','testfile');
+            var currentDate=getNowFormatDate();
+            export_table_to_excel('exporttable',currentDate);
+        }
+        function getNowFormatDate() {
+            var date = new Date();
+            var seperator1 = "-";
+            var seperator2 = ":";
+            var month = date.getMonth() + 1;
+            var strDate = date.getDate();
+            if (month >= 1 && month <= 9) {
+                month = "0" + month;
+            }
+            if (strDate >= 0 && strDate <= 9) {
+                strDate = "0" + strDate;
+            }
+            var currentdate = date.getFullYear() + seperator1 + month + seperator1 + strDate
+                + " " + date.getHours() + seperator2 + date.getMinutes()
+                + seperator2 + date.getSeconds();
+            return currentdate;
         }
 	</script>
 </html>
